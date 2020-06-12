@@ -67,6 +67,7 @@ public class ClientGui extends Application {
         dropDownBtn.setOnAction(event -> {
 //            doAction(dropDown.getValue().toString());
             System.out.println(dropDownUser.getValue().toString() + "  " + filesList.getSelectionModel().getSelectedItem() );
+            client.comunication.sendFile(filesList.getSelectionModel().getSelectedItem());
         });
 
         setUserShare.getChildren().addAll(selectUser, dropDownUser, dropDownBtn);

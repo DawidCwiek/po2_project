@@ -27,15 +27,16 @@ public class ClientGui extends Application {
         });
     }
 
-    public void updateStatus() {
+    public void updateStatus(String statusVal) {
         Platform.runLater(() -> {
-            status.setText("conecting");
+            this.status.setText(statusVal);
         });
     }
 
+
     public  void updateDropDownUser() {
         Platform.runLater(() -> {
-            dropDownUser.getItems().addAll(client.getUserList());
+            dropDownUser.getItems().setAll(client.getUserList());
         });
     }
 
@@ -48,13 +49,15 @@ public class ClientGui extends Application {
     public void start(Stage primaryStage) throws Exception {
         Parameters params = getParameters();
         List<String> list = params.getRaw();
-        this.client = new Client(list.get(0), list.get(1), 2137, this);
+
 
         // STATUS
         HBox statusBox = new HBox( 5);
         Label statusName = new Label("Status: ");
-        updateStatus();
+        updateStatus("connecting");
         statusBox.getChildren().addAll(statusName, status);
+
+        this.client = new Client(list.get(0), list.get(1), 2137, this);
 
         // LIST
         updateFileList();
@@ -67,7 +70,8 @@ public class ClientGui extends Application {
         dropDownBtn.setOnAction(event -> {
 //            doAction(dropDown.getValue().toString());
             System.out.println(dropDownUser.getValue().toString() + "  " + filesList.getSelectionModel().getSelectedItem() );
-            client.comunication.sendFile(filesList.getSelectionModel().getSelectedItem());
+//            client.comunication.sendFileAction(filesList.getSelectionModel().getSelectedItem());
+            client.comunication.deleteFileAction(filesList.getSelectionModel().getSelectedItem());
         });
 
         setUserShare.getChildren().addAll(selectUser, dropDownUser, dropDownBtn);
@@ -79,6 +83,7 @@ public class ClientGui extends Application {
 
         primaryStage.setOnCloseRequest(event -> {
             System.out.println("Stage is closing");
+            client.comunication.deleteOnlineUserAction();
             System.exit(0);
         });
         

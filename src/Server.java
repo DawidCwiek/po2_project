@@ -9,15 +9,40 @@ import java.util.List;
 public class Server extends Thread {
 
     private ServerSocket serverSocket;
-    private List<String> onlineUsers = new ArrayList<>();
+    private List<ClientHandler> onlineUsers = new ArrayList<>();
     private String path = "/Users/dawidcwiek/Desktop/serwer_pliki/";
 
     public Server(Integer port) {
         try {
-            serverSocket = new ServerSocket(port);
+            this.serverSocket = new ServerSocket(port);
         }
         catch (IOException e){
             e.printStackTrace();
+        }
+    }
+
+    public void deleteOnlineUser(Socket socket) {
+        for(ClientHandler client : this.onlineUsers) {
+           if(client.socket == socket) {
+               onlineUsers.remove(client);
+               break;
+           }
+        }
+        refreshUsers();
+        System.out.println(onlineUsers.toString());
+    }
+
+    public List<String> getOnlineUsers() {
+        List<String> users = new ArrayList<>();
+        for(ClientHandler client : this.onlineUsers) {
+            users.add(client.userName);
+        }
+        return users;
+    }
+
+    private void refreshUsers() {
+        for(ClientHandler client : this.onlineUsers) {
+           client.comunication.sendUserListAction();
         }
     }
 
@@ -30,11 +55,12 @@ public class Server extends Thread {
                 socket = serverSocket.accept();
                 BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 String userName = input.readLine();
-                System.out.println("A new client is connected : " + socket.getPort());
-
-                Thread t = new ClientHandler(socket, userName, path);
+                ClientHandler clientHandler = new ClientHandler(socket, userName, path, this);
+                onlineUsers.add(clientHandler);
+                Thread t = clientHandler;
                 t.start();
-
+                refreshUsers();
+                System.out.println(onlineUsers.toString());
             }
             catch (IOException e){
                 try {

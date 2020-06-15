@@ -13,7 +13,7 @@ public class Client {
     private Integer port;
     private Socket socket;
     private Watcher watcher;
-    private List<String> usersList = new ArrayList<>();
+    public List<String> usersList = new ArrayList<>();
     public ClientGui parent;
     private PrintWriter output;
     public Comunication comunication;
@@ -35,7 +35,9 @@ public class Client {
             this.socket = new Socket(ip, this.port);
             output = new PrintWriter(socket.getOutputStream(), true);
             output.println(this.name);
-            this.comunication = new Comunication(this.socket, this.name, this.path);
+            this.comunication = new Comunication(this.socket, this.name, this.path, this);
+            this.comunication.listen();
+            this.parent.updateStatus("connected");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -57,8 +59,7 @@ public class Client {
     }
 
     public List<String> getUserList() {
-        this.usersList.add("Mexican Peso");
-        this.usersList.add("Canadian Dollar");
+        System.out.println(this.usersList.toString());
         return this.usersList;
     }
 }

@@ -47,6 +47,9 @@ public class ClientGui extends Application {
     public void start(Stage primaryStage) throws Exception {
         Parameters params = getParameters();
         List<String> list = params.getRaw();
+        if(list.size() != 2) {
+            new Alert(Alert.AlertType.ERROR, "Bad starting arguments").showAndWait();
+        }
 
 
         // STATUS

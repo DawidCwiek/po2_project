@@ -40,7 +40,9 @@ public class Client {
             output.println(this.name);
             this.comunication = new Comunication(this.socket, this.name, this.path, this);
             this.comunication.listen();
-            this.parent.updateStatus("connected");
+            this.parent.statusClass.startStatus("online");
+            this.parent.updateStatus();
+            this.comunication.getFilesInfoAction();
             this.watcher.start();
         } catch (IOException e) {
             e.printStackTrace();
@@ -50,8 +52,9 @@ public class Client {
     public void synchronizationFiles(JSONArray files) {
         try {
             this.watcher.pause();
-            System.out.println("Synchronization");
-            this.parent.updateStatus("synchronization");
+
+            this.parent.statusClass.startStatus("synchronization");
+            this.parent.updateStatus();
 
             File folder = new File(this.path);
             List<File> listOfFiles = new ArrayList<>(Arrays.asList(folder.listFiles()));
@@ -93,8 +96,8 @@ public class Client {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        this.parent.updateStatus("online");
-        System.out.println("Synchronization END");
+        this.parent.statusClass.endStatus("synchronization");
+        this.parent.updateStatus();
         this.watcher.go();
     }
 

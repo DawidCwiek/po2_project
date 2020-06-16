@@ -193,8 +193,45 @@ public class Comunication {
         send(jo.toString());
     }
 
+    private void shareSave(String message) {
+        try {
+            if(this.client != null) {
+                this.client.parent.statusClass.startStatus("downloadFile");
+                this.client.parent.updateStatus();
+            }
+            JSONParser parser = new JSONParser();
+            JSONObject jo = (JSONObject) parser.parse(message);
+            File file = new File(this.server.path + jo.get("name") + "/" + jo.get("fileName"));
+            String byteString = (String)jo.get("file");
+            byte[] bytes = Base64.getDecoder().decode(byteString);
+            OutputStream os = new FileOutputStream(file);
+            os.write(bytes);
+            os.close();
+
+            if(this.server != null) {
+                this.server.syncUsers((String)jo.get("name"), this.socket);
+            }
+
+            if(this.client != null) {
+                this.client.parent.statusClass.endStatus("downloadFile");
+                this.client.parent.updateStatus();
+            }
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void saveFile(String message) {
         try {
+            if(this.client != null) {
+                this.client.parent.statusClass.startStatus("downloadFile");
+                this.client.parent.updateStatus();
+            }
             JSONParser parser = new JSONParser();
             JSONObject jo = (JSONObject) parser.parse(message);
             File file = new File(this.folderPath + "/" + jo.get("fileName"));
@@ -206,6 +243,11 @@ public class Comunication {
 
             if(this.server != null) {
                 this.server.syncUsers((String)jo.get("name"), this.socket);
+            }
+
+            if(this.client != null) {
+                this.client.parent.statusClass.endStatus("downloadFile");
+                this.client.parent.updateStatus();
             }
 
         } catch (ParseException e) {
@@ -247,6 +289,24 @@ public class Comunication {
         }
     }
 
+    public void shareFileAction(String filename, String userName) {
+        try {
+            Path filePath = Paths.get(folderPath + "/" + filename);
+
+            byte[] array = Files.readAllBytes(filePath);
+            JSONObject jo = new JSONObject();
+            jo.put("name", userName);
+            jo.put("action", "SHARE_FILE");
+            jo.put("fileName", filename);
+            jo.put("file", Base64.getEncoder().encodeToString(array));
+
+            send(jo.toString());
+            System.out.println(jo.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void actionManager(String message) {
         try {
             JSONParser parser = new JSONParser();
@@ -281,6 +341,9 @@ public class Comunication {
                     break;
                 case "SEND_FILES_INFO":
                     readFilesInfo(message);
+                    break;
+                case "SHARE_FILE":
+                    shareSave(message);
                     break;
             }
 

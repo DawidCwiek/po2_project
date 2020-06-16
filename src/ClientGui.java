@@ -3,15 +3,11 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ClientGui extends Application {
@@ -20,7 +16,7 @@ public class ClientGui extends Application {
     private ComboBox dropDownUser = new ComboBox();
     private Label status = new Label();
     private Client client;
-    public List<String> statusList = new ArrayList<>();
+    public Status statusClass = new Status();
 
     public void updateFileList() {
         ObservableList<String> items = FXCollections.observableArrayList (client.getFilesList());
@@ -29,9 +25,9 @@ public class ClientGui extends Application {
         });
     }
 
-    public void updateStatus(String statusVal) {
+    public void updateStatus() {
         Platform.runLater(() -> {
-            this.status.setText(statusVal);
+            this.status.setText(this.statusClass.status);
         });
     }
 
@@ -56,7 +52,7 @@ public class ClientGui extends Application {
         // STATUS
         HBox statusBox = new HBox( 5);
         Label statusName = new Label("Status: ");
-        updateStatus("connecting");
+        updateStatus();
         statusBox.getChildren().addAll(statusName, status);
 
         this.client = new Client(list.get(0), list.get(1), 2137, this);
@@ -70,11 +66,11 @@ public class ClientGui extends Application {
         updateDropDownUser();
         Button dropDownBtn = new Button("Share File");
         dropDownBtn.setOnAction(event -> {
-//            doAction(dropDown.getValue().toString());
-//            System.out.println(dropDownUser.getValue().toString() + "  " + filesList.getSelectionModel().getSelectedItem() );
-//            client.comunication.sendFileAction(filesList.getSelectionModel().getSelectedItem());
-//            client.comunication.deleteFileAction(filesList.getSelectionModel().getSelectedItem());
-            client.comunication.getFilesInfoAction();
+            if(filesList.getSelectionModel().getSelectedItem() == null || dropDownUser.getValue() == null)
+                new Alert(Alert.AlertType.ERROR, "You must select a user and file!").showAndWait();
+            else
+                client.comunication.shareFileAction(filesList.getSelectionModel().getSelectedItem(), dropDownUser.getValue().toString());
+
         });
 
         setUserShare.getChildren().addAll(selectUser, dropDownUser, dropDownBtn);

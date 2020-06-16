@@ -10,7 +10,7 @@ public class Server extends Thread {
 
     private ServerSocket serverSocket;
     private List<ClientHandler> onlineUsers = new ArrayList<>();
-    private String path = "/Users/dawidcwiek/Desktop/serwer_pliki/";
+    public String path = "/Users/dawidcwiek/Desktop/serwer_pliki/";
 
     public Server(Integer port) {
         try {

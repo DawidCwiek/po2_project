@@ -46,6 +46,15 @@ public class Server extends Thread {
         }
     }
 
+    public void syncUsers(String name, Socket socket) {
+        for(ClientHandler client : this.onlineUsers) {
+            if(client.userName.equals(name) && !client.socket.equals(socket)) {
+                System.out.println(name);
+                client.comunication.getFilesInfo();
+            }
+        }
+    }
+
     @Override
     public void run() {
         while (true) {

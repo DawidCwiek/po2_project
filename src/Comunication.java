@@ -1,3 +1,4 @@
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -73,7 +74,46 @@ public class Comunication {
     }
 
     public void send(String message) {
-        this.output.println(message);
+       this.output.println(message);
+    }
+
+    public void getFilesInfoAction() {
+        JSONObject jo = new JSONObject();
+        jo.put("name", this.name);
+        jo.put("action", "GET_FILES_INFO");
+        send(jo.toString());
+    }
+
+    public void getFilesInfo() {
+        File folder = new File(this.folderPath);
+        File[] listOfFiles = folder.listFiles();
+
+        JSONObject jo = new JSONObject();
+        jo.put("name", this.name);
+        jo.put("action", "SEND_FILES_INFO");
+        JSONArray joArray = new JSONArray();
+
+        for (int i = 0; i < listOfFiles.length; i++) {
+            if (listOfFiles[i].isFile()) {
+                JSONObject file = new JSONObject();
+                file.put("name", listOfFiles[i].getName());
+                file.put("createTime", listOfFiles[i].lastModified());
+                file.put("hash", CheckFile.getCheckSum(listOfFiles[i].getAbsolutePath()));
+                joArray.add(file);
+            }
+        }
+        jo.put("files", joArray);
+        send(jo.toJSONString());
+    }
+
+    public void readFilesInfo(String message) {
+        try {
+            JSONParser parser = new JSONParser();
+            JSONObject jo = (JSONObject) parser.parse(message);
+            this.client.synchronizationFiles((JSONArray)jo.get("files"));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
     private void deleteFile(String filename) {
@@ -99,9 +139,20 @@ public class Comunication {
         }
     }
 
+    public void getFileAction(String filename) {
+
+        JSONObject jo = new JSONObject();
+        jo.put("name", this.name);
+        jo.put("action", "GET_FILE");
+        jo.put("fileName", filename);
+
+        send(jo.toString());
+
+    }
+
     public void sendFileAction(String filename) {
         try {
-            Path filePath = Paths.get(folderPath + filename);
+            Path filePath = Paths.get(folderPath + "/" + filename);
 
             byte[] array = Files.readAllBytes(filePath);
             JSONObject jo = new JSONObject();
@@ -118,7 +169,7 @@ public class Comunication {
 
     public void modificationFileAction(String filename) {
         try {
-            Path filePath = Paths.get(folderPath + filename);
+            Path filePath = Paths.get(folderPath + "/" + filename);
 
             byte[] array = Files.readAllBytes(filePath);
             JSONObject jo = new JSONObject();
@@ -133,6 +184,15 @@ public class Comunication {
         }
     }
 
+    public void getModificationFile(String filename) {
+        JSONObject jo = new JSONObject();
+        jo.put("name", this.name);
+        jo.put("action", "GET_MODIFICATION_FILE");
+        jo.put("fileName", filename);
+
+        send(jo.toString());
+    }
+
     private void saveFile(String message) {
         try {
             JSONParser parser = new JSONParser();
@@ -143,6 +203,11 @@ public class Comunication {
             OutputStream os = new FileOutputStream(file);
             os.write(bytes);
             os.close();
+
+            if(this.server != null) {
+                this.server.syncUsers((String)jo.get("name"), this.socket);
+            }
+
         } catch (ParseException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
@@ -170,7 +235,6 @@ public class Comunication {
 
     private void updateUserList(String message) {
         try {
-            System.out.println(message);
             JSONParser parser = new JSONParser();
             JSONObject jo = (JSONObject) parser.parse(message);
             this.usersList = (List<String>) jo.get("userList");
@@ -181,7 +245,6 @@ public class Comunication {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-
     }
 
     private void actionManager(String message) {
@@ -194,6 +257,9 @@ public class Comunication {
                 case "SEND_FILE":
                     saveFile(message);
                     break;
+                case "GET_FILE":
+                    sendFileAction((String)jo.get("fileName"));
+                    break;
                 case "DELETE_FILE":
                     deleteFile((String)jo.get("fileName"));
                     break;
@@ -201,14 +267,21 @@ public class Comunication {
                     deleteFile((String)jo.get("fileName"));
                     saveFile(message);
                     break;
+                case "GET_MODIFICATION_FILE":
+                    modificationFileAction((String)jo.get("fileName"));
+                    break;
                 case "DELETE_ONLINE_USER":
                     this.server.deleteOnlineUser(this.socket);
                     break;
                 case "UPDATE_USER_LIST":
-                    System.out.println("dupa");
                     updateUserList(message);
                     break;
-
+                case "GET_FILES_INFO":
+                    getFilesInfo();
+                    break;
+                case "SEND_FILES_INFO":
+                    readFilesInfo(message);
+                    break;
             }
 
         } catch (ParseException e) {

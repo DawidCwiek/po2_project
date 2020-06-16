@@ -11,6 +11,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClientGui extends Application {
@@ -19,6 +20,7 @@ public class ClientGui extends Application {
     private ComboBox dropDownUser = new ComboBox();
     private Label status = new Label();
     private Client client;
+    public List<String> statusList = new ArrayList<>();
 
     public void updateFileList() {
         ObservableList<String> items = FXCollections.observableArrayList (client.getFilesList());
@@ -69,9 +71,10 @@ public class ClientGui extends Application {
         Button dropDownBtn = new Button("Share File");
         dropDownBtn.setOnAction(event -> {
 //            doAction(dropDown.getValue().toString());
-            System.out.println(dropDownUser.getValue().toString() + "  " + filesList.getSelectionModel().getSelectedItem() );
+//            System.out.println(dropDownUser.getValue().toString() + "  " + filesList.getSelectionModel().getSelectedItem() );
 //            client.comunication.sendFileAction(filesList.getSelectionModel().getSelectedItem());
-            client.comunication.deleteFileAction(filesList.getSelectionModel().getSelectedItem());
+//            client.comunication.deleteFileAction(filesList.getSelectionModel().getSelectedItem());
+            client.comunication.getFilesInfoAction();
         });
 
         setUserShare.getChildren().addAll(selectUser, dropDownUser, dropDownBtn);
@@ -83,7 +86,7 @@ public class ClientGui extends Application {
 
         primaryStage.setOnCloseRequest(event -> {
             System.out.println("Stage is closing");
-            client.comunication.deleteOnlineUserAction();
+            if(this.client.comunication != null) this.client.comunication.deleteOnlineUserAction();
             System.exit(0);
         });
         

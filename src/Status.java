@@ -57,5 +57,8 @@ public class Status {
         if(this.downloadFile > 0 && this.sendFile > 0) {
             this.status = "download and send file";
         }
+        if(this.online < 0) {
+            this.status = "offline";
+        }
     }
 }

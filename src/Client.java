@@ -45,6 +45,8 @@ public class Client {
             this.comunication.getFilesInfoAction();
             this.watcher.start();
         } catch (IOException e) {
+            this.parent.statusClass.endStatus("online");
+            this.parent.updateStatus();
             e.printStackTrace();
         }
     }
